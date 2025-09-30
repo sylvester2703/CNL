@@ -1,0 +1,58 @@
+def distance_vector_routing_all(graph):
+    nodes = list(graph.keys())
+    distance = {}
+    for node in nodes: 
+        distance[node] = {}
+        for dest in nodes:
+            if node == dest:
+                distance[node][dest] = 0
+            elif dest in graph[node]:
+                distance[node][dest] = graph[node][dest]
+            else:
+                distance[node][dest] = float('inf')
+    updated = True
+    while updated:
+        updated = False
+        for node in nodes:
+            for neighbor in graph[node]:
+                for dest in nodes:
+                    new_dist = distance[node][neighbor] + distance[neighbor][dest]
+                    if new_dist < distance[node][dest]:
+                        distance[node][dest] = new_dist
+                        updated = True
+    for source in nodes:
+        print(f"Routing Table for node {source}:")
+        print("+-------------+----------+-------+")
+        print("| Destination | Next Hop | Cost  |")
+        print("+-------------+----------+-------+")
+        for dest in nodes:
+            if dest == source:
+                continue
+            best_cost = float('inf')
+            best_hop = None
+            for neighbor in graph[source]:
+                cost_via_neighbor = graph[source][neighbor] + distance[neighbor][dest]
+                if cost_via_neighbor < best_cost:
+                    best_cost = cost_via_neighbor
+                    best_hop = neighbor
+            cost_str = f"{best_cost}" if best_cost != float('inf') else "∞"
+            print(f"| {dest:^11} | {str(best_hop):^8} | {cost_str:^5} |")
+        print("+-------------+----------+-------+")
+print("Enter nodes separated by space:")
+nodes = input().strip().split()
+print("Enter number of edges:")
+edges = int(input())
+print("Enter edges in format: node1 node2 cost")
+edge_list = []
+for _ in range(edges):
+    n1, n2, cost = input().strip().split()
+    cost = int(cost)
+    edge_list.append((n1, n2, cost))
+graph = {node: {} for node in nodes}
+print("--- Incremental Routing Updates ---")
+for i in range(edges):
+    n1, n2, cost = edge_list[i]
+    graph[n1][n2] = cost
+    graph[n2][n1] = cost
+    print(f"After adding edge {i+1}: {n1} --({cost})-- {n2}")
+    distance_vector_routing_all(graph)
