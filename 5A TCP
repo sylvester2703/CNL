@@ -1,0 +1,65 @@
+TCP CLIENT:-
+import java.io.*;
+import java.net.*;
+
+public class TCPClient {
+    public static void main(String[] args) {
+        String serverIP = "127.0.0.1";
+        int port = 8080;
+
+        try (Socket socket = new Socket(serverIP, port)) {
+            System.out.println("Connected to server " + serverIP + ":" + port);
+
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            String message = "Hello from client";
+            out.println(message);
+            System.out.println("Sent: " + message);
+
+            String response = in.readLine();
+            System.out.println("Received: " + response);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+Command: 
+javac file_name.java
+java file_name
+
+TCP SERVER:-
+import java.io.*;
+import java.net.*;
+
+public class TCPServer {
+    public static void main(String[] args) {
+        int port = 8080;
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("TCP Server listening on port " + port);
+
+            Socket clientSocket = serverSocket.accept(); // accept connection
+            System.out.println("Client connected: " + clientSocket.getInetAddress());
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+
+            String received = in.readLine();
+            System.out.println("Received: " + received);
+
+            String reply = "Hello from server";
+            out.println(reply);
+
+            clientSocket.close();
+            System.out.println("Connection closed");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+Command: 
+javac file_name.java
+java file_name
+
