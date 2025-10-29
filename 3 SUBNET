@@ -1,0 +1,41 @@
+def ip_to_binary(ip):
+    octets = ip.split(".")
+    binary_ip = ""
+    for octet in octets:
+        binary_ip += format(int(octet), '08b')
+    return binary_ip
+def binary_to_ip(binary):
+    ip = ""
+    for i in range(0, 32, 8):
+        ip += str(int(binary[i:i+8], 2))
+        if i != 24:
+            ip += "."
+    return ip
+def calculate_subnet_mask(num_subnets):
+    bits_needed = 0
+    while 2 ** bits_needed < num_subnets:
+        bits_needed += 1
+    mask = "1" * (24 + bits_needed) + "0" * (32 - (24 + bits_needed))
+    return binary_to_ip(mask)
+def generate_subnets(ip, num_subnets):
+    binary_ip = ip_to_binary(ip)
+    bits_needed = 0
+    while 2 ** bits_needed < num_subnets:
+        bits_needed += 1
+    subnet_size = 2 ** (32 - (24 + bits_needed))  
+    print("Subnet mask:", calculate_subnet_mask(num_subnets))
+    print("\nSubnets:")
+    network_part = binary_ip[:24] 
+    for i in range(num_subnets):
+        subnet_id_bin = format(i, '0' + str(bits_needed) + 'b')
+        subnet_bin = network_part + subnet_id_bin + "0" * (32 - (24 + bits_needed))
+        first_ip = subnet_bin
+        last_ip = subnet_bin[:32 - (32 - (24 + bits_needed))] + "1" * (32 - (24 + bits_needed))
+        print(f"Subnet {i+1}: {binary_to_ip(first_ip)} - {binary_to_ip(last_ip)}")
+print("Enter a Class C IP address (e.g., 192.168.1.0):")
+ip = input()
+print("Enter number of subnets:")
+num_subnets = int(input())
+generate_subnets(ip, num_subnets)
+
+
