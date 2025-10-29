@@ -1,0 +1,74 @@
+UDP CLIENT:-
+import java.net.*;
+
+public class UDPClient {
+    public static void main(String[] args) {
+        String serverIP = "127.0.0.1";
+        int port = 8080;
+
+        byte[] buffer = new byte[1024];
+
+        try (DatagramSocket socket = new DatagramSocket()) {
+            String message = "Hello from UDP client";
+            byte[] messageBytes = message.getBytes();
+
+            InetAddress serverAddress = InetAddress.getByName(serverIP);
+            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, serverAddress, port);
+
+            socket.send(packet); // sendto
+            System.out.println("Message sent");
+
+            DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
+            socket.receive(responsePacket); // recvfrom
+
+            String response = new String(responsePacket.getData(), 0, responsePacket.getLength());
+            System.out.println("Received: " + response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+Command: 
+javac file_name.java
+java file_name
+
+
+UDP SERVER:-
+import java.net.*;
+
+public class UDPServer {
+    public static void main(String[] args) {
+        int port = 8080;
+        byte[] buffer = new byte[1024];
+
+        try (DatagramSocket socket = new DatagramSocket(port)) {
+            System.out.println("UDP Server listening on port " + port);
+
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            socket.receive(packet);  // recvfrom
+            String received = new String(packet.getData(), 0, packet.getLength());
+            System.out.println("Received: " + received);
+
+            String reply = "Hello from UDP server";
+            byte[] replyBytes = reply.getBytes();
+
+            InetAddress clientAddress = packet.getAddress();
+            int clientPort = packet.getPort();
+
+            DatagramPacket replyPacket = new DatagramPacket(replyBytes, replyBytes.length, clientAddress, clientPort);
+            socket.send(replyPacket);  // sendto
+
+            System.out.println("Reply sent");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+Command: 
+javac file_name.java
+java file_name
+
