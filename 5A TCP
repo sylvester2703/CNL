@@ -1,65 +1,127 @@
 TCP CLIENT:-
-import java.io.*;
-import java.net.*;
 
-public class TCPClient {
-    public static void main(String[] args) {
-        String serverIP = "127.0.0.1";
-        int port = 8080;
+#include <iostream>
+#include <cstring>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
-        try (Socket socket = new Socket(serverIP, port)) {
-            System.out.println("Connected to server " + serverIP + ":" + port);
-
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            String message = "Hello from client";
-            out.println(message);
-            System.out.println("Sent: " + message);
-
-            String response = in.readLine();
-            System.out.println("Received: " + response);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+int main() {
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock == -1) {
+        std::cerr << "Failed to create socket\n";
+        return 1;
     }
+
+    sockaddr_in hint{};
+    hint.sin_family = AF_INET;
+    hint.sin_port = htons(54000);
+    inet_pton(AF_INET, "127.0.0.1", &hint.sin_addr);
+
+    if (connect(sock, (sockaddr*)&hint, sizeof(hint)) == -1) {
+        std::cerr << "Can't connect to server\n";
+        close(sock);
+        return 1;
+    }
+
+    const char* msg = "Hello from client!";
+    send(sock, msg, strlen(msg), 0);
+
+    char buffer[4096];
+    memset(buffer, 0, 4096);
+
+    int bytes_received = recv(sock, buffer, sizeof(buffer), 0);
+    if (bytes_received == -1) {
+        std::cerr << "Error in recv()\n";
+    } else {
+        std::cout << "Server replied: " 
+                  << std::string(buffer, bytes_received) << "\n";
+    }
+
+    close(sock);
+    return 0;
 }
-Command: 
-javac file_name.java
-java file_name
+Commands:-
+./client
+
 
 TCP SERVER:-
-import java.io.*;
-import java.net.*;
 
-public class TCPServer {
-    public static void main(String[] args) {
-        int port = 8080;
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("TCP Server listening on port " + port);
+#include <iostream>
+#include <cstring>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
-            Socket clientSocket = serverSocket.accept(); // accept connection
-            System.out.println("Client connected: " + clientSocket.getInetAddress());
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-
-            String received = in.readLine();
-            System.out.println("Received: " + received);
-
-            String reply = "Hello from server";
-            out.println(reply);
-
-            clientSocket.close();
-            System.out.println("Connection closed");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+int main() {
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd == -1) {
+        std::cerr << "Failed to create socket\n";
+        return 1;
     }
+
+    int opt = 1;
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    sockaddr_in server_addr{};
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(54000);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+
+    if (bind(server_fd, (sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
+        std::cerr << "Bind failed\n";
+        close(server_fd);
+        return 1;
+    }
+
+    if (listen(server_fd, SOMAXCONN) == -1) {
+        std::cerr << "Listen failed\n";
+        close(server_fd);
+        return 1;
+    }
+
+    std::cout << "Server listening on port 54000...\n";
+
+    sockaddr_in client_addr{};
+    socklen_t client_size = sizeof(client_addr);
+    int client_socket = accept(server_fd, (sockaddr*)&client_addr, &client_size);
+    if (client_socket == -1) {
+        std::cerr << "Accept failed\n";
+        close(server_fd);
+        return 1;
+    }
+
+    char client_ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, sizeof(client_ip));
+    std::cout << "Client connected: " << client_ip << ":" << ntohs(client_addr.sin_port) << "\n";
+
+    char buffer[4096];
+    std::memset(buffer, 0, sizeof(buffer));
+    int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+    if (bytes_received == -1) {
+        std::cerr << "Recv failed\n";
+    } else if (bytes_received == 0) {
+        std::cout << "Client disconnected\n";
+    } else {
+        std::cout << "Received: " << std::string(buffer, bytes_received) << "\n";
+        send(client_socket, buffer, bytes_received, 0); // echo back
+    }
+
+    close(client_socket);
+    close(server_fd);
+    return 0;
 }
 
-Command: 
-javac file_name.java
-java file_name
+Commands:-
+g++ tcp_server.cpp -o server
+g++ tcp_client.cpp -o client
+./server
 
+journalctl -k | grep -i "New USB device" | wc -l
+
+sudo journalctl --rotate
+sudo journalctl --vacuum-time=1s
