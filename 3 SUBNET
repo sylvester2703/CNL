@@ -37,5 +37,3 @@ ip = input()
 print("Enter number of subnets:")
 num_subnets = int(input())
 generate_subnets(ip, num_subnets)
-
-
