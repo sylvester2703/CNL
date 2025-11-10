@@ -1,0 +1,26 @@
+Take 2 Pc 1 Server And 1 Switch
+Click on the Server → go to the Desktop tab → click IP Configuration.
+Give the server a static IP address (so it won’t change).
+IP Address: 192.168.1.1
+Subnet Mask: 255.255.255.0
+Default Gateway: 192.168.1.1
+Turn on the dhcp service on server by going to the services tab in server
+
+Click on PC0 → go to Desktop tab → click IP Configuration.
+Select DHCP instead of Static.
+Wait a few seconds — you’ll see the IP auto-assigned:
+IP Address: 192.168.1.10
+Subnet Mask: 255.255.255.0
+Default Gateway: 192.168.1.1
+DNS: 8.8.8.8
+Do the same for PC1 and PC2 — they will get the next IPs:
+PC1 → 192.168.1.11
+PC2 → 192.168.1.12
+
+Open Command Prompt on any PC (Desktop → Command Prompt).
+Type:
+ipconfig
+→ You should see the IP address given by the DHCP server.
+Type:
+ping 192.168.1.1
+→ You should get a reply, meaning the PC can reach the DHCP Server.
