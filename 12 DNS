@@ -1,38 +1,38 @@
 import socket
-def get_ip_from_domain(domain_name):
-    try:
-        ip = socket.gethostbyname(domain_name)
-        print(f"IP address of {domain_name} is: {ip}")
-    except socket.gaierror:
-        print("Invalid domain name or unable to resolve.")
-def get_domain_from_ip(ip_address):
-    try:
-        domain = socket.gethostbyaddr(ip_address)
-        print(f"Domain name of {ip_address} is: {domain[0]}")
-    except socket.herror:
-        print("Invalid IP address or no domain name associated.")
-while True:
-    print("\nDNS Lookup Program")
-    print("1. Domain name to IP address")
-    print("2. IP address to Domain name")
-    print("Type 'exit' or 'stop' to quit the program.")
-    choice = input("Enter your choice (1/2): ").strip()
-    if choice.lower() in ["exit", "stop"]:
-        print("Program stopped.")
-        break
-    if choice == '1':
-        domain_name = input("Enter domain name (e.g., www.google.com): ").strip()
-        if domain_name.lower() in ["exit", "stop"]:
-            print("Program stopped.")
-            break
-        get_ip_from_domain(domain_name)
-    elif choice == '2':
-        ip_address = input("Enter IP address (e.g., 8.8.8.8): ").strip()
-        if ip_address.lower() in ["exit", "stop"]:
-            print("Program stopped.")
-            break
-        get_domain_from_ip(ip_address)
+
+url_ip_map = {}
+
+def dns_lookup():
+    print("DNS Lookup Tool")
+    print("1. URL to IP")
+    print("2. IP to URL")
+    print("3. Exit")
+
+    choice = input("Enter your choice (1/2/3): ")
+
+    if choice == "1":
+        url = input("Enter URL (e.g. www.google.com): ").strip()
+        ip_address = socket.gethostbyname(url)
+        url_ip_map[ip_address] = url
+        print(f"IP address of {url} is: {ip_address}")
+
+    elif choice == "2":
+        ip = input("Enter IP address (e.g. 8.8.8.8): ").strip()
+        if ip in url_ip_map:
+            print(f"URL for IP {ip} is: {url_ip_map[ip]}")
+        else:
+            url, alias, addresslist = socket.gethostbyaddr(ip)
+            print(f"URL for IP {ip} is: {url}")
+
     else:
-        print("Invalid choice! Please enter 1 or 2.")
+        print("Exiting program...")
+        return False  # signal to stop the loop
+
+    return True  # continue the loop
 
 
+if __name__ == "__main__":
+    while True:
+        if not dns_lookup():
+            break
+        print()
