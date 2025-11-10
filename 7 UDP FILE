@@ -1,0 +1,139 @@
+UDP Client
+#include <iostream>
+#include <fstream>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <cstring>
+using namespace std;
+#define PORT 8080
+#define BUFFER_SIZE 1024
+#define END_MARKER "END_OF_FILE"
+int main() {
+string server_ip;
+cout << "Enter server IP: ";
+cin >> server_ip;
+int s = socket(AF_INET, SOCK_DGRAM, 0);
+if (s < 0) { perror("socket"); return 1; }
+sockaddr_in server;
+memset(&server, 0, sizeof(server));
+server.sin_family = AF_INET;
+server.sin_port = htons(PORT);
+inet_pton(AF_INET, server_ip.c_str(), &server.sin_addr);
+socklen_t len = sizeof(server);
+char buffer[BUFFER_SIZE];
+// 1. Send hello
+string hello = "Hello from UDP Client";
+sendto(s, hello.c_str(), hello.size(), 0, (sockaddr*)&server, len);
+// 2. Receive hello
+int n = recvfrom(s, buffer, sizeof(buffer)-1, 0, (sockaddr*)&server, &len);
+buffer[n] = '\0';
+cout << "Server says: " << buffer << endl;
+// 3. Receive files
+string files[] = {"recv.txt", "recv_script.py", "recv_audio.mp3", "recv_video.mp4"};
+for (int i = 0; i < 4; i++) {
+ofstream fout(files[i], ios::binary);
+cout << "Receiving " << files[i] << "...\n";
+while (true) {
+n = recvfrom(s, buffer, sizeof(buffer), 0, (sockaddr*)&server, &len);
+if (n <= 0) break;
+if (n == strlen(END_MARKER) && strncmp(buffer, END_MARKER,
+strlen(END_MARKER)) == 0) {
+break; // End of file
+}
+fout.write(buffer, n);
+}
+fout.close();
+cout << files[i] << " received!\n";
+}
+close(s);
+return 0;
+}
+COMMANDS:-
+./userver
+
+
+
+UDP Server
+#include <iostream>
+#include <fstream>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <cstring>
+using namespace std;
+#define PORT 8080
+#define BUFFER_SIZE 1024
+#define END_MARKER "END_OF_FILE"
+int main() {
+int s = socket(AF_INET, SOCK_DGRAM, 0);
+if (s < 0) { perror("socket"); return 1; }
+sockaddr_in server;
+memset(&server, 0, sizeof(server));
+server.sin_family = AF_INET;
+server.sin_port = htons(PORT);
+server.sin_addr.s_addr = INADDR_ANY; // listen on all interfaces
+if (bind(s, (sockaddr*)&server, sizeof(server)) < 0) {
+perror("bind"); return 1;
+}
+char buffer[BUFFER_SIZE];
+sockaddr_in client;
+socklen_t len = sizeof(client);
+// 1. Receive hello
+int n = recvfrom(s, buffer, sizeof(buffer)-1, 0, (sockaddr*)&client, &len);
+buffer[n] = '\0';
+cout << "Client says: " << buffer << endl;
+// 2. Send hello back
+string hello = "Hello from UDP Server";
+sendto(s, hello.c_str(), hello.size(), 0, (sockaddr*)&client, len);
+// 3. Send files
+string files[] = {"test.txt", "script.py", "audio.mp3", "video.mp4"};
+for (auto &f : files) {
+ifstream fin(f, ios::binary);
+if (!fin) { cout << f << " not found!\n"; continue; }
+cout << "Sending " << f << "...\n";
+while (!fin.eof()) {
+fin.read(buffer, BUFFER_SIZE);
+int bytesRead = fin.gcount();
+if (bytesRead > 0) {
+sendto(s, buffer, bytesRead, 0, (sockaddr*)&client, len);
+}
+}
+// Send END_OF_FILE marker
+sendto(s, END_MARKER, strlen(END_MARKER), 0, (sockaddr*)&client, len);
+fin.close();
+cout << f << " sent!\n";
+}
+close(s);
+return 0;
+}
+
+
+KEEP THE FILES TO SEND IN THE SAME FOLDER 
+.TXT .PY .MP3 .MP4
+
+ON SERVER SIDE
+FIND THE SERVER ADDRESS
+ifconfig  ip addr ip a   hostname -I   curl ifconfig.me
+OPEN TERMINAL AND NAVIGATE TO CODE FOLDER
+cd path/to/your/folder
+COMPILE SERVER CODE
+g++ udp_server.cpp -o userver
+RUN THE SERVER
+./userver
+
+
+ON CLIENT SIDE 
+OPEN TERMINAL AND NAVIGATE TO CODE FOLDER
+cd path/to/your/folder
+COMPILE CLIENT CODE
+g++ udp_client.cpp -o uclient
+RUN THE SERVER
+./uclient
+ENTER THE SERVER IP ADDRESS THAT WE HAVE GOT
+
+
+journalctl -k | grep -i "New USB device" | wc -l
+
+sudo journalctl --rotate
+sudo journalctl --vacuum-time=1s
+
+
