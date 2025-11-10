@@ -1,38 +1,36 @@
+map={}
 import socket
 
-url_ip_map = {}
-
-def dns_lookup():
-    print("DNS Lookup Tool")
-    print("1. URL to IP")
-    print("2. IP to URL")
-    print("3. Exit")
-
-    choice = input("Enter your choice (1/2/3): ")
-
-    if choice == "1":
-        url = input("Enter URL (e.g. www.google.com): ").strip()
-        ip_address = socket.gethostbyname(url)
-        url_ip_map[ip_address] = url
-        print(f"IP address of {url} is: {ip_address}")
-
-    elif choice == "2":
-        ip = input("Enter IP address (e.g. 8.8.8.8): ").strip()
-        if ip in url_ip_map:
-            print(f"URL for IP {ip} is: {url_ip_map[ip]}")
-        else:
-            url, alias, addresslist = socket.gethostbyaddr(ip)
-            print(f"URL for IP {ip} is: {url}")
-
+def forward_dns():
+    url=input("Enter the URL: ")
+    try:
+        ip = socket.gethostbyname(url)
+        map[ip] = url
+        print("IP Address: ",ip)
+    except socket.gaierror:
+        print("Invalid URL.")
+        
+def reverse_dns():
+    ip=input("Enter the IP Address: ")
+    if ip in map:
+                print("Domain Name:", map[ip])
     else:
-        print("Exiting program...")
-        return False  # signal to stop the loop
+        try:
+            url=socket.gethostbyaddr(ip)[0]
+            print("URL: ",url)
+        except socket.herror:
+            print("Invalid URL.")
 
-    return True  # continue the loop
-
-
-if __name__ == "__main__":
-    while True:
-        if not dns_lookup():
-            break
-        print()
+while(1):
+    print("DNS Lookup")
+    print("1. URL TO IP")
+    print("2. IP TO URL")
+    print("3. Exit")
+    choice=int(input("Enter your choice: "))
+    
+    if choice==1:
+        forward_dns()
+    elif choice==2:
+        reverse_dns()
+    else:
+        break
