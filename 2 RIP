@@ -1,0 +1,57 @@
+Use 3 router, switch and 6 pc
+Configure the pc with address
+Pc0 192.168.10.2(ip)   255.255.255.0(subnet)   192.168.10.1(default gateway)
+Pc1 192.168.10.3(ip)   255.255.255.0(subnet)   192.168.10.1(default gateway)
+Pc2 192.168.10.2(ip)   255.255.255.0(subnet)   192.168.20.1(default gateway)
+Pc3 192.168.10.3(ip)   255.255.255.0(subnet)   192.168.20.1(default gateway)
+Pc4 192.168.10.2(ip)   255.255.255.0(subnet)   192.168.30.1(default gateway)
+Pc5 192.168.10.3(ip)   255.255.255.0(subnet)   192.168.30.1(default gateway)
+
+Write this is desktop ip config static
+Configure ip address for router
+Router 0 interface(fast ether 0/0)  192.168.10.1(ip address) 255.255.255.0(subnet)
+	  interface(serial 2/0)  10.0.0.1 (ip address)  255.0.0.0(subnet)
+Router 1 interface(fast ether 0/0)  192.168.20.1(ip address) 255.255.255.0(subnet)
+	  interface(serial 2/0)  10.0.0.2 (ip address)  255.0.0.0(subnet)
+	  interface(serial 3/0)  11.0.0.1 (ip address)  255.0.0.0(subnet)
+Router 2 interface(fast ether 0/0)  192.168.30.1(ip address) 255.255.255.0(subnet)
+	  interface(serial 2/0)  11.0.0.2 (ip address)  255.0.0.0(subnet)
+ 	  
+Router config and write in config all the details
+
+
+
+Click on the Router
+Click on Router R1 in your workspace.
+A new window will open.
+Go to the “CLI” tab
+In that window, click on the CLI tab (Command Line Interface).
+
+Code for the following
+1. Enable
+Configure terminal
+Router rip
+#network 192.168.10.0
+#network 10.0.0.0
+Exit
+Exit
+Show ip protocol
+
+2. Enable
+Configure terminal
+Router rip
+#network 192.168.20.0
+#network 10.0.0.0
+#network 11.0.0.0
+Exit
+Exit
+Show ip protocol
+
+2. Enable
+Configure terminal
+Router rip
+#network 192.168.30.0
+#network 11.0.0.0
+Exit
+Exit
+Show ip protocol
